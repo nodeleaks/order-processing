@@ -15,7 +15,7 @@ resource "aws_lambda_function" "api" {
   function_name = "${local.project}-api-${local.env}"
   filename      = var.lambda_zip_path
   handler       = "dist/lambda.handler"
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 30
   memory_size   = 512
@@ -34,7 +34,7 @@ resource "aws_lambda_function" "process_payment" {
   function_name = "${local.project}-process-payment-${local.env}"
   filename      = var.lambda_zip_path
   handler       = "dist/handlers/processPayment.handler"
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 30
   memory_size   = 256
@@ -51,7 +51,7 @@ resource "aws_lambda_function" "reserve_inventory" {
   function_name = "${local.project}-reserve-inventory-${local.env}"
   filename      = var.lambda_zip_path
   handler       = "dist/handlers/reserveInventory.handler"
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 15
   memory_size   = 256
@@ -68,7 +68,7 @@ resource "aws_lambda_function" "send_notification" {
   function_name = "${local.project}-send-notification-${local.env}"
   filename      = var.lambda_zip_path
   handler       = "dist/handlers/sendNotification.handler"
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 15
   memory_size   = 128
