@@ -39,7 +39,7 @@ jobs:
           POSTGRES_PASSWORD: orders_pass
           POSTGRES_DB: orders_db
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U orders_user"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -80,7 +80,7 @@ jobs:
       - name: Run Drizzle migrations
         run: npm run db:migrate
         env:
-          DATABASE_URL: postgresql://orders_user:orders_pass@localhost:5432/orders_db
+          DATABASE_URL: postgresql://orders_user:orders_pass@127.0.0.1:5432/orders_db
 
       - uses: hashicorp/setup-terraform@v3
       - name: Create dummy dist.zip for LocalStack
@@ -95,11 +95,11 @@ jobs:
           AWS_SECRET_ACCESS_KEY: test
 
       - name: Start server
-        run: npx tsx src/server.ts &
+        run: npx tsx src/server.ts > server.log 2>&1 &
         env:
           IS_LOCAL: 'true'
           API_KEY: local-secret-key
-          DATABASE_URL: postgresql://orders_user:orders_pass@localhost:5432/orders_db
+          DATABASE_URL: postgresql://orders_user:orders_pass@127.0.0.1:5432/orders_db
           AWS_ENDPOINT: http://localhost:4566
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
@@ -110,14 +110,14 @@ jobs:
           SNS_ORDER_EVENTS_ARN: arn:aws:sns:us-east-1:000000000000:order-events
 
       - name: Wait for server
-        run: npx wait-on http://localhost:3000/health --timeout 15000
+        run: npx wait-on http://127.0.0.1:3000/health --timeout 15000
 
       - name: Run integration tests
         run: npm run test:integration
         env:
           IS_LOCAL: 'true'
           API_KEY: local-secret-key
-          DATABASE_URL: postgresql://orders_user:orders_pass@localhost:5432/orders_db
+          DATABASE_URL: postgresql://orders_user:orders_pass@127.0.0.1:5432/orders_db
           AWS_ENDPOINT: http://localhost:4566
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
@@ -125,6 +125,10 @@ jobs:
           DYNAMODB_TABLE_IDEMPOTENCY: idempotency-keys
           SQS_ORDERS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-orders-local.fifo
           SQS_NOTIFICATIONS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-notifications-local
+
+      - name: Print server logs (on failure)
+        if: failure()
+        run: cat server.log
 
   deploy:
     runs-on: ubuntu-latest

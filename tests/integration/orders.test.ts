@@ -23,23 +23,24 @@ describe('Orders API — integration', () => {
   it('GET /health returns ok', async () => {
     const res = await fetch(`${BASE_URL}/health`)
     expect(res.status).toBe(200)
+
     const body = await res.json()
     expect(body.status).toBe('ok')
   })
 
   it('POST /orders — creates order with idempotency key', async () => {
     const idempotencyKey = uuidv4()
-
     const res = await fetch(`${BASE_URL}/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Idempotency-Key': idempotencyKey,
+        'Authorization': 'Bearer local-secret-key',
       },
       body: JSON.stringify(createOrderPayload()),
     })
-
     expect(res.status).toBe(201)
+
     const body = await res.json()
     expect(body.data).toMatchObject({
       userId: TEST_USER_ID,
@@ -54,7 +55,7 @@ describe('Orders API — integration', () => {
 
     const res1 = await fetch(`${BASE_URL}/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
+      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey, 'Authorization': 'Bearer local-secret-key' },
       body: JSON.stringify(payload),
     })
 
@@ -62,7 +63,7 @@ describe('Orders API — integration', () => {
 
     const res2 = await fetch(`${BASE_URL}/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
+      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey, 'Authorization': 'Bearer local-secret-key' },
       body: JSON.stringify(payload),
     })
 
@@ -74,7 +75,7 @@ describe('Orders API — integration', () => {
   it('POST /orders — fails without idempotency key', async () => {
     const res = await fetch(`${BASE_URL}/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer local-secret-key' },
       body: JSON.stringify(createOrderPayload()),
     })
 
@@ -82,7 +83,9 @@ describe('Orders API — integration', () => {
   })
 
   it('GET /orders/:id — returns 404 for unknown id', async () => {
-    const res = await fetch(`${BASE_URL}/orders/${uuidv4()}`)
+    const res = await fetch(`${BASE_URL}/orders/${uuidv4()}`, {
+      headers: { 'Authorization': 'Bearer local-secret-key' },
+    })
 
     expect(res.status).toBe(404)
   })
@@ -93,11 +96,14 @@ describe('Orders API — integration', () => {
       headers: {
         'Content-Type': 'application/json',
         'Idempotency-Key': uuidv4(),
+        'Authorization': 'Bearer local-secret-key',
       },
       body: JSON.stringify(createOrderPayload()),
     })
 
-    const res = await fetch(`${BASE_URL}/orders?userId=${TEST_USER_ID}`)
+    const res = await fetch(`${BASE_URL}/orders?userId=${TEST_USER_ID}`, {
+      headers: { 'Authorization': 'Bearer local-secret-key' },
+    })
 
     expect(res.status).toBe(200)
 
@@ -114,6 +120,7 @@ it('POST /orders — sends message to SQS', async () => {
     headers: {
       'Content-Type': 'application/json',
       'Idempotency-Key': uuidv4(),
+      'Authorization': 'Bearer local-secret-key',
     },
     body: JSON.stringify(createOrderPayload()),
   })
@@ -128,6 +135,7 @@ it('POST /orders — sends message to SQS', async () => {
 
   expect(result.Messages).toBeDefined()
   expect(result.Messages!.length).toBeGreaterThan(0)
+
   const body = JSON.parse(result.Messages![0].Body!)
   expect(body.userId).toBe(TEST_USER_ID)
-})
+}, 10000)
