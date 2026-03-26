@@ -82,6 +82,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://orders_user:orders_pass@127.0.0.1:5432/orders_db
 
+      - name: Seed test data
+        run: npx tsx src/db/seed.ts
+        env:
+          DATABASE_URL: postgresql://orders_user:orders_pass@127.0.0.1:5432/orders_db
+
       - uses: hashicorp/setup-terraform@v3
       - name: Create dummy dist.zip for LocalStack
         run: make build
