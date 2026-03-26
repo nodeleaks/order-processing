@@ -1,0 +1,27 @@
+# Node
+node_modules/
+dist/
+dist.zip
+coverage/
+
+# Env
+.env.local
+.env
+*.env
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+*.tfvars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
