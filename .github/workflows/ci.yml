@@ -146,7 +146,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci && npm run build
+      - run: npm ci && make build
       - name: Create Lambda zip
         run: zip -r dist.zip dist node_modules package.json
       - uses: hashicorp/setup-terraform@v3
