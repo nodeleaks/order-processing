@@ -30,15 +30,6 @@ jobs:
     needs: test
 
     services:
-      localstack:
-        image: localstack/localstack:4
-        ports:
-          - 4566:4566
-        env:
-          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
-          SERVICES: lambda,apigateway,sqs,sns,dynamodb,s3,stepfunctions,cloudwatch,iam
-          AWS_DEFAULT_REGION: us-east-1
-
       postgres:
         image: postgres:16-alpine
         ports:
@@ -60,6 +51,30 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - run: npm ci
+
+      - name: Start LocalStack
+        run: |
+          docker run -d \
+            --name localstack \
+            -p 4566:4566 \
+            -e LOCALSTACK_AUTH_TOKEN=${{ secrets.LOCALSTACK_AUTH_TOKEN }} \
+            -e SERVICES=lambda,apigateway,sqs,sns,dynamodb,s3,stepfunctions,cloudwatch,iam \
+            -e AWS_DEFAULT_REGION=us-east-1 \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            localstack/localstack:4
+
+      - name: Wait for LocalStack
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:4566/_localstack/health | grep -q '"running"'; then
+              echo "LocalStack is ready"
+              exit 0
+            fi
+            echo "Waiting for LocalStack... ($i/30)"
+            sleep 2
+          done
+          echo "LocalStack failed to start"
+          exit 1
 
       - name: Run Drizzle migrations
         run: npm run db:migrate
