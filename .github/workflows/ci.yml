@@ -17,9 +17,10 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run lint
-      - name: Run tests
-        run: npm test
+      - name: Run unit tests
+        run: npm run test:unit
         env:
+          IS_LOCAL: 'true'
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
