@@ -1,12 +1,12 @@
-.PHONY: dev build lint test test-integration test-smoke \
+.PHONY: local build lint test test-integration test-smoke \
         db-generate db-migrate db-migrate-dev db-studio seed \
         infra-up infra-init infra-down infra-logs \
         tf-init tf-apply tf-destroy tf-apply-dev tf-destroy-dev \
         deploy-dev help
 
 # ── Dev ──────────────────────────────────────────────
-dev:
-	npm run dev
+local:
+	npm run local
 
 build:
 	mkdir -p dist
@@ -91,7 +91,7 @@ setup:
 # ── Help ──────────────────────────────────────────────
 help:
 	@echo ""
-	@echo "  make dev                    — run dev server locally"
+	@echo "  make local                  — run dev server locally"
 	@echo "  make test                   — unit tests"
 	@echo "  make test-integration       — integration tests"
 	@echo "  make db-generate name=<>   — generate migration with name"
@@ -107,7 +107,7 @@ help:
 	@echo "  make deploy-dev             — full deploy: build + migrate + apply"
 	@echo ""
 	@echo "  First run (local):"
-	@echo "  make setup && make dev"
+	@echo "  make setup && make local"
 	@echo "  First run (AWS):"
 	@echo "  make deploy-dev"
 	@echo "  After schema.ts changes:"
