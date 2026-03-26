@@ -28,3 +28,10 @@ variable "database_url" {
   sensitive   = true
   default     = "postgresql://orders_user:orders_pass@localhost:5432/orders_db"
 }
+
+variable "api_key" {
+  description = "API Key to access the endpoints"
+  type        = string
+  sensitive   = true
+  default     = "local-secret-key"
+}

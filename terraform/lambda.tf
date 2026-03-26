@@ -7,6 +7,7 @@ locals {
     SQS_NOTIFICATIONS_QUEUE_URL    = aws_sqs_queue.notifications.url
     SNS_ORDER_EVENTS_ARN           = aws_sns_topic.order_events.arn
     DATABASE_URL                   = var.database_url
+    API_KEY                        = var.api_key
   }
 }
 
