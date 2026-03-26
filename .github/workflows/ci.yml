@@ -104,7 +104,7 @@ jobs:
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
-          DYNAMODB_TABLE_IDEMPOTENCY: idempotency-keys
+          DYNAMODB_TABLE_IDEMPOTENCY: order-processing-idempotency-local
           SQS_ORDERS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-orders-local.fifo
           SQS_NOTIFICATIONS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-notifications-local
           SNS_ORDER_EVENTS_ARN: arn:aws:sns:us-east-1:000000000000:order-events
@@ -122,7 +122,7 @@ jobs:
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
-          DYNAMODB_TABLE_IDEMPOTENCY: idempotency-keys
+          DYNAMODB_TABLE_IDEMPOTENCY: order-processing-idempotency-local
           SQS_ORDERS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-orders-local.fifo
           SQS_NOTIFICATIONS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-notifications-local
 
