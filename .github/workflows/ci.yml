@@ -35,7 +35,7 @@ jobs:
         ports:
           - 4566:4566
         env:
-          SERVICES: lambda,sqs,dynamodb,sns,stepfunctions
+          SERVICES: lambda,apigateway,sqs,sns,dynamodb,s3,stepfunctions,cloudwatch,iam
           AWS_DEFAULT_REGION: us-east-1
 
       postgres:
