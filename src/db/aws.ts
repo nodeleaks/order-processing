@@ -6,7 +6,7 @@ import { SNSClient } from '@aws-sdk/client-sns'
 const isLocal = process.env.IS_LOCAL === 'true'
 
 const awsConfig = {
-  region: process.env.AWS_REGION ?? 'us-east-1',
+  region: process.env.AWS_REGION ?? 'eu-central-1',
   ...(isLocal && {
     endpoint: process.env.AWS_ENDPOINT ?? 'http://localhost:4566',
     credentials: {

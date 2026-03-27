@@ -21,7 +21,7 @@ jobs:
         run: npm run test:unit
         env:
           IS_LOCAL: 'true'
-          AWS_REGION: us-east-1
+          AWS_REGION: eu-central-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
 
@@ -59,7 +59,7 @@ jobs:
             -p 4566:4566 \
             -e LOCALSTACK_AUTH_TOKEN=${{ secrets.LOCALSTACK_AUTH_TOKEN }} \
             -e SERVICES=lambda,apigateway,sqs,sns,dynamodb,s3,stepfunctions,cloudwatch,iam \
-            -e AWS_DEFAULT_REGION=us-east-1 \
+            -e AWS_DEFAULT_REGION=eu-central-1 \
             -v /var/run/docker.sock:/var/run/docker.sock \
             localstack/localstack:4
 
@@ -91,18 +91,18 @@ jobs:
       - name: Create dummy dist.zip for LocalStack
         run: make build
       - name: Clear stale CI state
-        run: aws s3 rm s3://order-processing-tf-state-dev/ci.tfstate || true
+        run: aws s3 rm s3://dev-order-processing-tf-state/ci.tfstate || true
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
+          AWS_DEFAULT_REGION: eu-central-1
 
       - name: Init LocalStack resources
         run: |
-          terraform -chdir=terraform init -reconfigure -backend-config="bucket=order-processing-tf-state-dev" -backend-config="key=ci.tfstate" -backend-config="region=us-east-1"
+          terraform -chdir=terraform init -reconfigure -backend-config="bucket=dev-order-processing-tf-state" -backend-config="key=ci.tfstate" -backend-config="region=eu-central-1"
           terraform -chdir=terraform apply -auto-approve -var="is_local=true" -var="environment=local"
         env:
-          AWS_DEFAULT_REGION: us-east-1
+          AWS_DEFAULT_REGION: eu-central-1
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -113,13 +113,13 @@ jobs:
           API_KEY: local-secret-key
           DATABASE_URL: postgresql://orders_user:orders_pass@127.0.0.1:5432/orders_db
           AWS_ENDPOINT: http://localhost:4566
-          AWS_REGION: us-east-1
+          AWS_REGION: eu-central-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           DYNAMODB_TABLE_IDEMPOTENCY: order-processing-idempotency-local
-          SQS_ORDERS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-orders-local.fifo
-          SQS_NOTIFICATIONS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-notifications-local
-          SNS_ORDER_EVENTS_ARN: arn:aws:sns:us-east-1:000000000000:order-events
+          SQS_ORDERS_QUEUE_URL: http://sqs.eu-central-1.localhost.localstack.cloud:4566/000000000000/order-processing-orders-local.fifo
+          SQS_NOTIFICATIONS_QUEUE_URL: http://sqs.eu-central-1.localhost.localstack.cloud:4566/000000000000/order-processing-notifications-local
+          SNS_ORDER_EVENTS_ARN: arn:aws:sns:eu-central-1:000000000000:order-events
 
       - name: Wait for server
         run: npx wait-on http://127.0.0.1:3000/health --timeout 15000
@@ -131,12 +131,12 @@ jobs:
           API_KEY: local-secret-key
           DATABASE_URL: postgresql://orders_user:orders_pass@127.0.0.1:5432/orders_db
           AWS_ENDPOINT: http://localhost:4566
-          AWS_REGION: us-east-1
+          AWS_REGION: eu-central-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           DYNAMODB_TABLE_IDEMPOTENCY: order-processing-idempotency-local
-          SQS_ORDERS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-orders-local.fifo
-          SQS_NOTIFICATIONS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/order-processing-notifications-local
+          SQS_ORDERS_QUEUE_URL: http://sqs.eu-central-1.localhost.localstack.cloud:4566/000000000000/order-processing-orders-local.fifo
+          SQS_NOTIFICATIONS_QUEUE_URL: http://sqs.eu-central-1.localhost.localstack.cloud:4566/000000000000/order-processing-notifications-local
 
       - name: Print server logs (on failure)
         if: failure()
@@ -183,7 +183,7 @@ jobs:
 
       - name: Deploy to AWS
         run: |
-          terraform -chdir=terraform init -reconfigure -backend-config="bucket=order-processing-tf-state-dev" -backend-config="key=dev.tfstate" -backend-config="region=us-east-1"
+          terraform -chdir=terraform init -reconfigure -backend-config="bucket=dev-order-processing-tf-state" -backend-config="key=dev.tfstate" -backend-config="region=eu-central-1"
           terraform -chdir=terraform apply -auto-approve \
             -var="environment=dev" \
             -var="is_local=false" \
@@ -196,6 +196,6 @@ jobs:
       - name: Run smoke tests
         run: npm ci && npm run test:smoke
         env:
-          AWS_REGION: us-east-1
+          AWS_REGION: eu-central-1
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
