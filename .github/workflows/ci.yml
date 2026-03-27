@@ -90,14 +90,21 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
       - name: Create dummy dist.zip for LocalStack
         run: make build
+      - name: Clear stale CI state
+        run: aws s3 rm s3://order-processing-tf-state-dev/ci.tfstate || true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+
       - name: Init LocalStack resources
         run: |
-          terraform -chdir=terraform init -reconfigure -backend=false
-          terraform -chdir=terraform apply -auto-approve -state=/tmp/ci.tfstate -var="is_local=true" -var="environment=local"
+          terraform -chdir=terraform init -reconfigure -backend-config="bucket=order-processing-tf-state-dev" -backend-config="key=ci.tfstate" -backend-config="region=us-east-1"
+          terraform -chdir=terraform apply -auto-approve -var="is_local=true" -var="environment=local"
         env:
           AWS_DEFAULT_REGION: us-east-1
-          AWS_ACCESS_KEY_ID: test
-          AWS_SECRET_ACCESS_KEY: test
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Start server
         run: npx tsx src/server.ts > server.log 2>&1 &
