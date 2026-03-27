@@ -92,8 +92,8 @@ jobs:
         run: make build
       - name: Init LocalStack resources
         run: |
-          terraform -chdir=terraform init -reconfigure -backend=local -backend-config="path=/tmp/ci.tfstate"
-          terraform -chdir=terraform apply -auto-approve -var="is_local=true" -var="environment=local"
+          terraform -chdir=terraform init -reconfigure -backend=false
+          terraform -chdir=terraform apply -auto-approve -state=/tmp/ci.tfstate -var="is_local=true" -var="environment=local"
         env:
           AWS_DEFAULT_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
