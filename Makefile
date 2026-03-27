@@ -58,18 +58,21 @@ infra-logs:
 
 # ── Terraform ─────────────────────────────────────────
 tf-init:
-	terraform -chdir=terraform init
+	terraform -chdir=terraform init -reconfigure -backend-config="bucket=order-processing-tf-state-dev" -backend-config="key=local.tfstate" -backend-config="region=us-east-1"
 
-tf-apply:
+tf-apply: tf-init
 	terraform -chdir=terraform apply -var-file=local.tfvars
 
-tf-destroy:
+tf-destroy: tf-init
 	terraform -chdir=terraform destroy -var-file=local.tfvars
 
-tf-apply-dev:
+tf-init-dev:
+	terraform -chdir=terraform init -reconfigure -backend-config="bucket=order-processing-tf-state-dev" -backend-config="key=dev.tfstate" -backend-config="region=us-east-1"
+
+tf-apply-dev: tf-init-dev
 	terraform -chdir=terraform apply -var-file=dev.tfvars
 
-tf-destroy-dev:
+tf-destroy-dev: tf-init-dev
 	terraform -chdir=terraform destroy -var-file=dev.tfvars
 
 # ── Deploy ────────────────────────────────────────────
