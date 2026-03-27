@@ -39,7 +39,7 @@ jobs:
           POSTGRES_PASSWORD: orders_pass
           POSTGRES_DB: orders_db
         options: >-
-          --health-cmd "pg_isready -U orders_user"
+          --health-cmd "pg_isready -U orders_user -d orders_db"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -171,6 +171,16 @@ jobs:
         run: |
           cd build_artifacts && zip -rq ../bundle.zip .
       - uses: hashicorp/setup-terraform@v3
+      - name: Run Drizzle migrations
+        run: npm run db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Seed dev data
+        run: npx tsx src/db/seed.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Deploy to AWS
         run: |
           terraform -chdir=terraform init -reconfigure -backend-config="bucket=order-processing-tf-state-dev" -backend-config="key=dev.tfstate" -backend-config="region=us-east-1"
