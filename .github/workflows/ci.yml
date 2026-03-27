@@ -146,9 +146,13 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci && make build
+      - run: npm ci
+      - name: Build TypeScript
+        run: npx tsc
       - name: Create Lambda zip
-        run: zip -r dist.zip dist node_modules package.json
+        run: |
+          npm prune --production
+          zip -qr dist.zip dist node_modules package.json
       - uses: hashicorp/setup-terraform@v3
       - name: Deploy to AWS
         run: |
