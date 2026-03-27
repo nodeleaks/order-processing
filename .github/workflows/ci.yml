@@ -156,11 +156,15 @@ jobs:
       - run: npm ci
       - name: Build Lambda bundle
         run: |
-          npx esbuild src/lambda.ts src/handlers/*.ts \
-            --bundle --platform=node --target=node22 --outdir=dist --format=esm \
-            --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+          # Bundle main entries into the root of dist/
+          npx esbuild src/lambda.ts --bundle --platform=node --target=node22 --outfile=dist/lambda.js --format=esm --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+          
+          # Explicitly bundle each handler to ensure they are at the root
+          for f in src/handlers/*.ts; do
+            name=$(basename "$f" .ts)
+            npx esbuild "$f" --bundle --platform=node --target=node22 --outfile="dist/$name.js" --format=esm --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+          done
       - name: Create Lambda zip
-        # Copy package.json into dist/ and zip contents from there
         run: |
           cp package.json dist/
           cd dist && zip -rq ../dist.zip .
