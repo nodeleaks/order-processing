@@ -22,3 +22,11 @@ output "api_endpoint" {
   description = "API Gateway endpoint URL"
   value       = var.is_local ? null : aws_apigatewayv2_stage.default[0].invoke_url
 }
+
+resource "local_file" "smoke_env" {
+  filename = "${path.module}/../.env.smoke"
+  content  = <<-EOT
+SQS_ORDERS_QUEUE_URL=${aws_sqs_queue.orders.url}
+DYNAMODB_TABLE_IDEMPOTENCY=${aws_dynamodb_table.idempotency.name}
+EOT
+}
