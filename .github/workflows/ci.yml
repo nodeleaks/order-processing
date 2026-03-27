@@ -156,18 +156,20 @@ jobs:
       - run: npm ci
       - name: Build Lambda bundle
         run: |
-          # Bundle main entries into the root of dist/
-          npx esbuild src/lambda.ts --bundle --platform=node --target=node22 --outfile=dist/lambda.js --format=esm --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+          # Clean and recreate a fresh build folder
+          rm -rf build_artifacts && mkdir -p build_artifacts
           
-          # Explicitly bundle each handler to ensure they are at the root
+          # Bundle main entries into build_artifacts/ with .mjs extension
+          npx esbuild src/lambda.ts --bundle --platform=node --target=node22 --outfile=build_artifacts/lambda.mjs --format=esm --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+          
+          # Explicitly bundle each handler to the root
           for f in src/handlers/*.ts; do
             name=$(basename "$f" .ts)
-            npx esbuild "$f" --bundle --platform=node --target=node22 --outfile="dist/$name.js" --format=esm --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+            npx esbuild "$f" --bundle --platform=node --target=node22 --outfile="build_artifacts/$name.mjs" --format=esm --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
           done
       - name: Create Lambda zip
         run: |
-          cp package.json dist/
-          cd dist && zip -rq ../dist.zip .
+          cd build_artifacts && zip -rq ../bundle.zip .
       - uses: hashicorp/setup-terraform@v3
       - name: Deploy to AWS
         run: |
@@ -177,7 +179,7 @@ jobs:
             -var="is_local=false" \
             -var="database_url=${{ secrets.DATABASE_URL }}" \
             -var="api_key=${{ secrets.API_KEY }}" \
-            -var="lambda_zip_path=../dist.zip"
+            -var="lambda_zip_path=../bundle.zip"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
