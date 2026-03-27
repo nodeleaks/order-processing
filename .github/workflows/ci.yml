@@ -160,10 +160,12 @@ jobs:
             --bundle --platform=node --target=node22 --outdir=dist --format=esm \
             --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
       - name: Create Lambda zip
-        # Zip the contents of dist/ and package.json into the root
+        # Copy package.json into dist/ and zip contents from there
         run: |
-          cd dist && zip -qr ../dist.zip .
-          cd .. && zip -ur dist.zip package.json
+          cp package.json dist/
+          cd dist && zip -rq ../dist.zip .
+      - name: List zip contents (debug)
+        run: unzip -l dist.zip
       - uses: hashicorp/setup-terraform@v3
       - name: Deploy to AWS
         run: |
