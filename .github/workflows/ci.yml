@@ -168,8 +168,6 @@ jobs:
         run: |
           cp package.json dist/
           cd dist && zip -rq ../dist.zip .
-      - name: List zip contents (debug)
-        run: unzip -l dist.zip
       - uses: hashicorp/setup-terraform@v3
       - name: Deploy to AWS
         run: |

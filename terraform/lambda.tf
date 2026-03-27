@@ -15,7 +15,7 @@ locals {
 resource "aws_lambda_function" "api" {
   function_name = "${local.project}-api-${local.env}"
   filename      = var.lambda_zip_path
-  handler       = "lambda.handler"
+  handler       = "lambda.mjs.handler"
   runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 30
@@ -34,7 +34,7 @@ resource "aws_lambda_function" "api" {
 resource "aws_lambda_function" "process_payment" {
   function_name = "${local.project}-process-payment-${local.env}"
   filename      = var.lambda_zip_path
-  handler       = "process-payment.handler"
+  handler       = "process-payment.mjs.handler"
   runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 30
@@ -51,7 +51,7 @@ resource "aws_lambda_function" "process_payment" {
 resource "aws_lambda_function" "reserve_inventory" {
   function_name = "${local.project}-reserve-inventory-${local.env}"
   filename      = var.lambda_zip_path
-  handler       = "reserve-inventory.handler"
+  handler       = "reserve-inventory.mjs.handler"
   runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 15
@@ -68,7 +68,7 @@ resource "aws_lambda_function" "reserve_inventory" {
 resource "aws_lambda_function" "send_notification" {
   function_name = "${local.project}-send-notification-${local.env}"
   filename      = var.lambda_zip_path
-  handler       = "send-notification.handler"
+  handler       = "send-notification.mjs.handler"
   runtime       = "nodejs22.x"
   role          = aws_iam_role.lambda.arn
   timeout       = 15
