@@ -1,6 +1,6 @@
 # Order Processing System
 
-Learning project. Covers SAGA pattern using AWS services.
+Learning project. Covers SAGA pattern using AWS step functions.
 
 ## Stack
 
