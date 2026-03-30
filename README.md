@@ -1,7 +1,6 @@
 # Order Processing System
 
-Learning project.
-Covers the entire AWS serverless stack.
+Learning project. Covers SAGA pattern using AWS services.
 
 ## Stack
 
