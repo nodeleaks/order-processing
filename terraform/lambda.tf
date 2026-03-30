@@ -81,10 +81,36 @@ resource "aws_lambda_function" "send_notification" {
   tags = local.tags
 }
 
+# SQS Processor — triggers SAGA from orders queue
+resource "aws_lambda_function" "order_processor" {
+  function_name = "${local.project}-order-processor-${local.env}"
+  filename      = var.lambda_zip_path
+  handler       = "order-processor.handler"
+  runtime       = "nodejs22.x"
+  role          = aws_iam_role.lambda.arn
+  timeout       = 30
+  memory_size   = 256
+
+  environment {
+    variables = merge(local.lambda_env, {
+      STEP_FUNCTIONS_ORDER_SAGA_ARN = aws_sfn_state_machine.order_saga.arn
+    })
+  }
+
+  tags = local.tags
+}
+
 # SQS trigger для notification Lambda
 resource "aws_lambda_event_source_mapping" "notifications" {
   event_source_arn = aws_sqs_queue.notifications.arn
   function_name    = aws_lambda_function.send_notification.arn
+  batch_size       = 10
+}
+
+# SQS trigger for order processor
+resource "aws_lambda_event_source_mapping" "orders" {
+  event_source_arn = aws_sqs_queue.orders.arn
+  function_name    = aws_lambda_function.order_processor.arn
   batch_size       = 10
 }
 

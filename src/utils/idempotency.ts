@@ -1,5 +1,5 @@
 import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb'
-import { dynamo } from '../db/aws'
+import { dynamo } from '../services/aws'
 import type { IdempotencyRecord } from '../types/index'
 
 const TABLE = process.env.DYNAMODB_TABLE_IDEMPOTENCY ?? 'idempotency-keys'

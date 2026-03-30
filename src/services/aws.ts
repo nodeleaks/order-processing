@@ -2,6 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
 import { SQSClient } from '@aws-sdk/client-sqs'
 import { SNSClient } from '@aws-sdk/client-sns'
+import { SFNClient } from '@aws-sdk/client-sfn'
 
 const isLocal = process.env.IS_LOCAL === 'true'
 
@@ -24,3 +25,4 @@ export const dynamo = DynamoDBDocumentClient.from(dynamoClient, {
 
 export const sqs = new SQSClient(awsConfig)
 export const sns = new SNSClient(awsConfig)
+export const sfn = new SFNClient(awsConfig)

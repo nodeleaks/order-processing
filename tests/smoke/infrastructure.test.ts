@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { GetQueueAttributesCommand } from '@aws-sdk/client-sqs'
 import { DescribeTableCommand } from '@aws-sdk/client-dynamodb'
-import { sqs, dynamo } from '../../src/db/aws.js'
+import { sqs, dynamo } from '../../src/services/aws'
 
 describe('Infrastructure smoke tests', () => {
   it('SQS orders queue is accessible', async () => {

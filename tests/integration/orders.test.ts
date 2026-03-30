@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { v4 as uuidv4 } from 'uuid'
 import { ReceiveMessageCommand } from '@aws-sdk/client-sqs'
-import { sqs } from '../../src/db/aws'
+import { sqs } from '../../src/services/aws'
 
 const BASE_URL = process.env.API_URL ?? 'http://localhost:3000'
 const TEST_USER_ID = '11111111-1111-1111-1111-111111111111'

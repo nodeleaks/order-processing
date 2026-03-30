@@ -1,5 +1,5 @@
 import { SendMessageCommand } from '@aws-sdk/client-sqs'
-import { sqs } from '../db/aws'
+import { sqs } from '../services/aws'
 
 interface SendNotificationEvent {
   orderId: string
