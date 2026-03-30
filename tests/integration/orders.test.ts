@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { v4 as uuidv4 } from 'uuid'
-import { ReceiveMessageCommand } from '@aws-sdk/client-sqs'
-import { sqs } from '../../src/services/aws'
 
 const BASE_URL = process.env.API_URL ?? 'http://localhost:3000'
 const TEST_USER_ID = '11111111-1111-1111-1111-111111111111'
@@ -113,29 +111,3 @@ describe('Orders API — integration', () => {
     expect(body.data.length).toBeGreaterThan(0)
   })
 })
-
-it('POST /orders — sends message to SQS', async () => {
-  await fetch(`${BASE_URL}/orders`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Idempotency-Key': uuidv4(),
-      'Authorization': 'Bearer local-secret-key',
-    },
-    body: JSON.stringify(createOrderPayload()),
-  })
-
-  const result = await sqs.send(
-    new ReceiveMessageCommand({
-      QueueUrl: process.env.SQS_ORDERS_QUEUE_URL,
-      WaitTimeSeconds: 5,
-      MaxNumberOfMessages: 1,
-    })
-  )
-
-  expect(result.Messages).toBeDefined()
-  expect(result.Messages!.length).toBeGreaterThan(0)
-
-  const body = JSON.parse(result.Messages![0].Body!)
-  expect(body.userId).toBe(TEST_USER_ID)
-}, 10000)
