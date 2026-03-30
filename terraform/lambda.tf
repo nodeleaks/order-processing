@@ -20,6 +20,7 @@ resource "aws_lambda_function" "api" {
   role          = aws_iam_role.lambda.arn
   timeout       = 30
   memory_size   = 512
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
     variables = merge(local.lambda_env, {
@@ -39,6 +40,7 @@ resource "aws_lambda_function" "process_payment" {
   role          = aws_iam_role.lambda.arn
   timeout       = 30
   memory_size   = 256
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
     variables = local.lambda_env
@@ -56,6 +58,7 @@ resource "aws_lambda_function" "reserve_inventory" {
   role          = aws_iam_role.lambda.arn
   timeout       = 15
   memory_size   = 256
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
     variables = local.lambda_env
@@ -73,6 +76,7 @@ resource "aws_lambda_function" "send_notification" {
   role          = aws_iam_role.lambda.arn
   timeout       = 15
   memory_size   = 128
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
     variables = local.lambda_env
@@ -90,6 +94,7 @@ resource "aws_lambda_function" "order_processor" {
   role          = aws_iam_role.lambda.arn
   timeout       = 30
   memory_size   = 256
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
     variables = merge(local.lambda_env, {
