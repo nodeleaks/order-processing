@@ -1,14 +1,14 @@
 # Order Processing System
 
-Учбовий проект для підготовки до технічного співбесіди.
-Покриває весь AWS serverless стек з вакансії.
+Learning project.
+Covers the entire AWS serverless stack.
 
-## Стек
+## Stack
 
-| Категорія | Технологія |
+| Category | Technology |
 |-----------|-----------|
 | Runtime | Node.js 24 + TypeScript |
-| Framework | Hono (Lambda + Node.js адаптери) |
+| Framework | Hono (Lambda + Node.js) |
 | ORM | Drizzle ORM + drizzle-zod |
 | Validation | Zod v4 |
 | Database | PostgreSQL (Drizzle) + DynamoDB (idempotency) |
@@ -20,7 +20,7 @@
 | CI/CD | GitHub Actions |
 | Local AWS | LocalStack |
 
-## Архітектура
+## Architecture
 
 ```
 Client
@@ -32,49 +32,42 @@ Client
                     └── Step Functions — SAGA
                           ├── Reserve inventory  (Lambda)
                           ├── Process payment    (Lambda)
-                          │     └── [fail] → Release inventory (компенсація)
+                          │     └── [fail] → Release inventory (compensation)
                           └── Send notification  (SNS → SQS → Lambda)
 ```
 
-## Ключові технічні рішення
+## Key technical decisions
 
-**Idempotency** — кожен `POST /orders` вимагає `Idempotency-Key` заголовок.
-Перевіряємо DynamoDB перед обробкою. Захист від дублікатів при retry.
+**Idempotency** — each `POST /orders` requires `Idempotency-Key` header.
+Check DynamoDB before processing. Protection against duplicates on retry.
 
-**SQS FIFO + MessageGroupId** — шардинг по `userId`.
-Порядок замовлень гарантований в межах одного юзера.
+**SQS FIFO + MessageGroupId** — sharding by `userId`.
+Order sequence is guaranteed within one user.
 
 **Composite index** — `(user_id, status, created_at DESC)`.
-Покриває найчастіший запит без додаткового сортування.
+Covers the most frequent query without additional sorting.
 
-**SAGA через Step Functions** — при помилці платежу
-автоматично компенсуємо резерв інвентарю через `Catch`.
+**SAGA via Step Functions** — on payment failure
+automatically compensate inventory reservation via `Catch`.
 
-**Retry з exponential backoff + jitter** — уникаємо thundering herd
-при тимчасових збоях зовнішніх сервісів.
+**Retry with exponential backoff + jitter** — avoid thundering herd
+with temporary failures of external services.
 
-**drizzle-zod** — Zod схеми генеруються зі схеми Drizzle.
-Одне джерело правди — не дублюємо типи вручну.
+**drizzle-zod** — Zod schemas are generated from Drizzle schema.
+Single source of truth — no manual type duplication.
 
-## Швидкий старт
+## Quick start
 
 ```bash
-# 1. Встановити залежності
-npm install
+# 1. Complete local setup (Deps + Infrastructure + Terraform + DB Migrations + Seed)
+make setup
 
-# 2. Запустити LocalStack + PostgreSQL
-docker compose up -d
-
-# 3. Згенерувати та застосувати міграції
-npm run db:generate
-npm run db:migrate
-
-# 4. Запустити сервер
-npm run dev
+# 2. Start server locally
+make local
 # → http://localhost:3000
 
-# 5. Тести
-npm test
+# 3. Run tests
+make test
 ```
 
 ## API
@@ -106,23 +99,23 @@ terraform init
 terraform apply -var="environment=local"
 ```
 
-## Drizzle команди
+## Drizzle commands
 
 ```bash
-npm run db:generate   # згенерувати міграції зі schema.ts
-npm run db:migrate    # застосувати міграції
-npm run db:studio     # веб UI для перегляду даних
+npm run db:generate   # generate migrations from schema.ts
+npm run db:migrate    # apply migrations
+npm run db:studio     # web UI for viewing data
 ```
 
-## Що покриває проект з вакансії
+## What the project covers
 
 - TypeScript · Node.js · Hono
 - AWS Lambda · API Gateway · SQS · SNS · DynamoDB · Step Functions
-- PostgreSQL з composite та partial indexes
+- PostgreSQL with composite index
 - Terraform (IaC)
 - Idempotency pattern
-- SAGA pattern з компенсацією
-- Retry з exponential backoff + jitter
-- Unit · Integration · Smoke тести
-- CI/CD через GitHub Actions
-- LocalStack для локальної розробки без AWS акаунту
+- SAGA pattern with compensation
+- Retry with exponential backoff + jitter
+- Unit · Integration · Smoke tests
+- CI/CD via GitHub Actions
+- LocalStack for local development without AWS account

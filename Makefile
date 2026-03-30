@@ -83,6 +83,7 @@ deploy-dev:
 	make tf-apply-dev
 
 setup:
+	npm ci
 	make infra-up
 	make build
 	make tf-init
