@@ -41,5 +41,5 @@ export const handler = async (event: ProcessPaymentEvent) => {
     .where(eq(orders.id, orderId))
 
   console.log(`Payment processed for order ${orderId}:`, payment)
-  return { orderId, transactionId: payment.transactionId }
+  return { orderId, transactionId: payment.transactionId, totalAmount: order.totalAmount }
 }

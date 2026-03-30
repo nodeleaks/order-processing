@@ -32,6 +32,10 @@ resource "aws_iam_role_policy" "step_functions" {
         aws_lambda_function.process_payment.arn,
         aws_lambda_function.send_notification.arn,
       ]
+    }, {
+      Effect = "Allow"
+      Action = ["sns:Publish"]
+      Resource = [aws_sns_topic.order_events.arn]
     }]
   })
 }
@@ -50,6 +54,7 @@ resource "aws_sfn_state_machine" "order_saga" {
       ReserveInventory = {
         Type     = "Task"
         Resource = aws_lambda_function.reserve_inventory.arn
+        ResultPath = "$.inventory"
         Retry = [{
           ErrorEquals     = ["Lambda.ServiceException", "Lambda.TooManyRequestsException"]
           IntervalSeconds = 2
@@ -68,6 +73,7 @@ resource "aws_sfn_state_machine" "order_saga" {
       ProcessPayment = {
         Type     = "Task"
         Resource = aws_lambda_function.process_payment.arn
+        ResultPath = "$.payment"
         Retry = [{
           ErrorEquals     = ["Lambda.ServiceException"]
           IntervalSeconds = 2
@@ -104,10 +110,19 @@ resource "aws_sfn_state_machine" "order_saga" {
         Next = "OrderFailed"
       }
 
-      # Step 3: Send confirmation
+      # Step 3: Send confirmation via SNS
       SendConfirmation = {
         Type     = "Task"
-        Resource = aws_lambda_function.send_notification.arn
+        Resource = "arn:aws:states:::sns:publish"
+        Parameters = {
+          TopicArn = aws_sns_topic.order_events.arn
+          Message = {
+            "orderId.$"     = "$.orderId"
+            "userId.$"      = "$.userId"
+            "totalAmount.$" = "$.payment.totalAmount"
+            "status"        = "CONFIRMED"
+          }
+        }
         Retry = [{
           ErrorEquals     = ["States.ALL"]
           IntervalSeconds = 5

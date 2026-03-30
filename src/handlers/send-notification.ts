@@ -1,26 +1,20 @@
-import { SendMessageCommand } from '@aws-sdk/client-sqs'
-import { sqs } from '../services/aws'
+import { SQSEvent } from 'aws-lambda'
 
-interface SendNotificationEvent {
-  orderId: string
-  userId: string
-}
+export const handler = async (event: SQSEvent) => {
+  for (const record of event.Records) {
+    const snsMessage = JSON.parse(record.body)
+    const payload = typeof snsMessage.Message === 'string' 
+      ? JSON.parse(snsMessage.Message) 
+      : snsMessage.Message
 
-export const handler = async (event: SendNotificationEvent) => {
-  const { orderId, userId } = event
+    const { orderId, userId, totalAmount, status } = payload
 
-  await sqs.send(
-    new SendMessageCommand({
-      QueueUrl: process.env.SQS_NOTIFICATIONS_QUEUE_URL,
-      MessageBody: JSON.stringify({
-        type: 'ORDER_CONFIRMED',
-        orderId,
-        userId,
-        timestamp: new Date().toISOString(),
-      }),
-    })
-  )
+    console.log(`[NOTIFICATION] Order ${status}:`)
+    console.log(`- Order: ${orderId}`)
+    console.log(`- User: ${userId}`)
+    console.log(`- Amount: $${totalAmount}`)
+    console.log(`- Status: ${status}`)
+  }
 
-  console.log(`Notification queued for order ${orderId}`)
-  return { orderId, notificationQueued: true }
+  return { success: true }
 }

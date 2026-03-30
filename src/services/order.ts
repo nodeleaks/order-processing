@@ -9,6 +9,7 @@ import type { Order } from '../db/schema'
 
 export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const id = uuidv4()
+
   const totalAmount = input.items
     .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
     .toFixed(2)

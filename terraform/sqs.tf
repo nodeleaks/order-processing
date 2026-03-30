@@ -40,9 +40,30 @@ resource "aws_cloudwatch_metric_alarm" "dlq_alarm" {
   threshold           = 0
   alarm_description   = "Orders DLQ has messages — investigate immediately"
 
-  dimensions = {
-    QueueName = aws_sqs_queue.orders_dlq.name
-  }
-
   tags = local.tags
+}
+
+# Allow SNS to send messages to notifications SQS
+resource "aws_sqs_queue_policy" "notifications" {
+  queue_url = aws_sqs_queue.notifications.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "sns.amazonaws.com" }
+      Action    = "sqs:SendMessage"
+      Resource  = aws_sqs_queue.notifications.arn
+      Condition = {
+        ArnEquals = { "aws:SourceArn" = aws_sns_topic.order_events.arn }
+      }
+    }]
+  })
+}
+
+# SNS topic -> SQS queue subscription
+resource "aws_sns_topic_subscription" "notifications" {
+  topic_arn = aws_sns_topic.order_events.arn
+  protocol  = "sqs"
+  endpoint  = aws_sqs_queue.notifications.arn
 }
