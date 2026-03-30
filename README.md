@@ -22,18 +22,21 @@ Covers the entire AWS serverless stack.
 
 ## Architecture
 
-```
+```text
 Client
   └── API Gateway
-        └── Lambda (Hono)
-              ├── DynamoDB     — idempotency keys (TTL 24h)
-              ├── PostgreSQL   — orders, users (Drizzle ORM)
-              └── SQS FIFO     — async processing
-                    └── Step Functions — SAGA
-                          ├── Reserve inventory  (Lambda)
-                          ├── Process payment    (Lambda)
-                          │     └── [fail] → Release inventory (compensation)
-                          └── Send notification  (SNS → SQS → Lambda)
+        └── Lambda (Hono API)
+              ├── DynamoDB       — idempotency keys (TTL 24h)
+              ├── PostgreSQL     — orders, users (Drizzle ORM)
+              └── SQS FIFO       — orders queue
+                    └── Lambda (Order Processor)
+                          └── Step Functions (SAGA)
+                                ├── Reserve inventory  (Lambda)
+                                ├── Process payment    (Lambda)
+                                │     └── [fail] → Release inventory (compensation)
+                                └── Publish events     (Direct SNS Integration)
+                                      └── SQS          (Notifications queue)
+                                            └── Send notification (Lambda)
 ```
 
 ## Key technical decisions
