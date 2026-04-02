@@ -6,7 +6,7 @@ Learning project. Covers SAGA pattern using AWS step functions.
 
 | Category | Technology |
 |-----------|-----------|
-| Runtime | Node.js 24 + TypeScript |
+| Runtime | Node.js 22 + TypeScript |
 | Framework | Hono (Lambda + Node.js) |
 | ORM | Drizzle ORM + drizzle-zod |
 | Validation | Zod v4 |
