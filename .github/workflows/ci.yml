@@ -142,6 +142,44 @@ jobs:
         if: failure()
         run: cat server.log
 
+  api-e2e:
+    runs-on: ubuntu-latest
+    needs: integration
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: qa/package-lock.json
+
+      - name: Wait for server
+        run: npx wait-on http://127.0.0.1:3000/health --timeout 15000
+
+      - name: Install qa dependencies
+        working-directory: qa
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: qa
+        run: npx playwright install --with-deps chromium
+
+      - name: Run API test suite
+        working-directory: qa
+        run: npm test
+        env:
+          API_URL: http://127.0.0.1:3000
+          API_KEY: local-secret-key
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: qa/playwright-report/
+          retention-days: 14
+
   deploy:
     runs-on: ubuntu-latest
     needs: integration
